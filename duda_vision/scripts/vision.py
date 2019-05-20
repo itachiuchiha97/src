@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-#test
 import roslib
 roslib.load_manifest('duda_vision')
 import sys
