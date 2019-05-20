@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+
+<launch>
+
+    <!-- Launch IMU -->
+    <include file="$(find sparton_imu)/launch/AHRS-8.launch" />
+    <!-- Launch LaserScan -->
+    <include file="$(find lms1xx)/launch/LMS1xx.launch" />
+    <!-- Launch GPS -->
+    <node pkg="duda_go" type="gps.py" name="gps_driver">
+        <param name="port" value="/dev/ttyUSB0" />
+    </node>
+    <!-- Launch Encoder Input -->
+    <node pkg="rosserial_python" type="serial_node.py" name="encoder" output="screen">
+        <rosparam param="port">/dev/ttyUSB1</rosparam>
+        <rosparam param="baud">2000000</rosparam>
+    </node>
+
+    <!-- Launch Differential Drive Odometry / Noisy Odom -->
+    <node pkg="duda_go" type="diff_wo_tf.py" name="diff_drive" />
+
+
+    <group ns="/duda">
+        <rosparam command="load" file="$(find duda_go)/config/ekf_map_params.yaml" />
+        <rosparam command="load" file="$(find duda_go)/config/navsat_params.yaml" />
+
+        <!-- Launch Filtered Odometry by fusing wheel odometry and imu -->
+        <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_odom" clear_params="true" />
+
+        <!-- Launch Filtered Map by fusing wheel odometry, gps odometry and imu -->
+        <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_map" clear_params="true">
+            <remap from="odometry/filtered" to="odometry/filtered_map" />
+        </node>
+
+        <!-- Launch transformation node from GPS coordinates to UTM coordinates -->
+        <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform" clear_params="true"
+            output="screen">
+            <remap from="odometry/filtered" to="odometry/filtered_map" />
+            <remap from="gps/fix" to="/navsat/fix" />
+            <remap from="imu/data" to="/imu/data" />
+        </node>
+    </group>
+
+    <!-- Launch GMapping -->
+    <include file="$(find duda_go)/launch/gmapping.launch" />
+
+    <!-- Launch Move Base -->
+    <include file="$(find duda_go)/include/move_base_nav.launch" />
+
+    <!-- Launch Model in RVIZ -->
+    <include file="$(find duda_description)/launch/view_demo.launch" />
+
+</launch>

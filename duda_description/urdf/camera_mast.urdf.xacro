@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+ 
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="camera_mast">
+
+
+	<!-- Macro Definition -->
+	<xacro:macro name="camera_mast" params="height separation">
+		<link name="camera_mast_vertical_link">
+			<inertial>
+				<mass value="${camera_mast_vertical_mass}" />
+				<origin xyz="0 0 ${height/2}" />
+				<box_inertia m="${camera_mast_vertical_mass}" x="${camera_mast_cross_section_size}" y="${camera_mast_cross_section_size}" z="${height}" />
+			</inertial>
+			<visual>
+				<origin xyz="0 0 ${height/2}" rpy="0 0 0" />
+				<geometry>
+					<box size="${camera_mast_cross_section_size} ${camera_mast_cross_section_size} ${height}"/>
+				</geometry>
+			</visual>
+			<collision>
+				<origin xyz="0 0 0" rpy="0 0 0" />
+				<geometry>
+					<box size="${camera_mast_cross_section_size} ${camera_mast_cross_section_size} ${height}"/>
+				</geometry>
+			</collision>
+		</link>
+
+		<gazebo reference="camera_mast_vertical_link">
+			<material>Gazebo/Gray</material>
+			<turnGravityOff>false</turnGravityOff>				
+		</gazebo>
+
+		<joint name="base_to_camera_mast" type="fixed">
+			<parent link="base_link"/>
+			<child link="camera_mast_vertical_link"/>
+			<origin xyz="${-camera_mast_long_offset} 0 ${base_link_z/2}" />
+		</joint>
+
+		<link name="camera_mast_horizontal_link">
+			<inertial>
+				<mass value="${camera_mast_horizontal_mass}" />
+				<origin xyz="0 0 0" />
+				<box_inertia m="${camera_mast_horizontal_mass}" x="${camera_mast_cross_section_size}" y="${separation}" z="${camera_mast_cross_section_size}" />
+			</inertial>
+			<visual>
+				<origin xyz="0 0 0" rpy="0 0 0" />
+				<geometry>
+					<box size="${camera_mast_cross_section_size} ${separation} ${camera_mast_cross_section_size}" />
+				</geometry>
+			</visual>
+			<collision>
+				<origin xyz="0 0 0" rpy="0 0 0" />
+				<geometry>
+					<box size="${camera_mast_cross_section_size} ${camera_mast_cross_section_size} ${height}"/>
+				</geometry>
+			</collision>
+		</link>
+
+		<joint name="camera_mast_vertical_to_horizontal" type="fixed">
+			<parent link="camera_mast_vertical_link"/>
+			<child link="camera_mast_horizontal_link"/>
+			<origin xyz="0 0 ${height-camera_mast_cross_section_size}"/>
+		</joint>
+		
+		<gazebo reference="camera_mast_horizontal_link">
+			<material>Gazebo/Gray</material>
+			<turnGravityOff>false</turnGravityOff>				
+		</gazebo>
+
+	</xacro:macro>
+</robot>

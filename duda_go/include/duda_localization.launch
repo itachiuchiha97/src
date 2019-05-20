@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<launch>
+    <rosparam command="load" file="$(find duda_go)/config/new_params.yaml" />
+
+    <include file="$(find sparton_imu)/launch/AHRS-8.launch"/>
+    <include file="$(find duda_description)/launch/view_demo.launch"/>
+    <node pkg="rosserial_python" type="serial_node.py" name="encoder" output="screen">
+        <rosparam param="port">/dev/ttyUSB1</rosparam>
+        <rosparam param="baud">2000000</rosparam>
+    </node>
+
+    <node pkg="duda_go" type="diff_wo_tf.py" name="diff_drive" />
+    
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_odom" clear_params="true" />   
+    
+        
+</launch>
